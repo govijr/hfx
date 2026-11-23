@@ -204,6 +204,7 @@ async function hover(index: number) {
   try {
     const files = await listRepoFiles(row.model.id, searchAbort?.signal);
     const { variants, preferred } = variantsFor(row.model, files, getState().hw);
+    if (!variants.length) return patchRow(row.model.id, { variants: "no runnable GGUF model in this repo" });
     patchRow(row.model.id, { variants, variantIndex: preferred });
   } catch (e) {
     if (!isAbort(e)) patchRow(row.model.id, { variants: errText(e) });

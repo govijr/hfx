@@ -6,7 +6,8 @@
   "scripts": {
     "build": "esbuild src/main.tsx --bundle --platform=node --format=cjs --target=node20 --jsx=automatic --external:electron --external:@zenbu-labs/pixel --external:react --outfile=dist/main.js",
     "dev": "npm run build && node bin/hfx.js",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p .",
+    "test": "esbuild src/hub.test.ts --bundle --platform=node --format=cjs --target=node20 --log-level=warning --outfile=.hfx-test/hub.test.cjs && node --test .hfx-test/hub.test.cjs"
   },
   "license": "MIT",
   "dependencies": {

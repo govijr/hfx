@@ -133,6 +133,7 @@ export async function listRepoFiles(id: string, signal?: AbortSignal): Promise<R
 }
 
 const QUANT_RE = /[-_.]((?:I?Q\d+(?:_[A-Z0-9]+)*)|(?:B?F16)|F32|MXFP4(?:_MOE)?)(?:-\d{5}-of-\d{5})?\.gguf$/i;
+const IMATRIX_RE = /(^|\/)imatrix\.gguf$/i;
 const QUANT_PREFERENCE = ["Q4_K_M", "Q5_K_M", "Q4_K_S", "Q6_K", "Q8_0", "Q4_0", "IQ4_XS", "IQ4_NL", "Q3_K_M", "Q5_K_S"];
 
 const SKIP_WITH_SAFETENSORS = /\.(bin|pt|pth|ckpt|msgpack|h5|onnx|onnx_data|ot|tflite|mlmodel)$/i;
@@ -158,14 +159,15 @@ export function runnableFiles(files: RepoFile[]): RepoFile[] {
 }
 
 export function variantsFor(model: HubModel, files: RepoFile[], hw: Hardware): { variants: Variant[]; preferred: number } {
-  const ggufs = files.filter((f) => f.path.endsWith(".gguf"));
+  // Keep a repo with only IMATRIX.GGUF out of the safetensors fallback.
+  const ggufs = files.filter((f) => f.path.endsWith(".gguf") || IMATRIX_RE.test(f.path));
   const sum = (fs: RepoFile[]) => fs.reduce((s, f) => s + f.size, 0);
   if (ggufs.length) {
-    const mmprojs = ggufs.filter((f) => /mmproj/i.test(f.path));
+    const mmprojs = ggufs.filter((f) => /mmproj/i.test(f.path) && !IMATRIX_RE.test(f.path));
     const mmproj = mmprojs.find((f) => /f16/i.test(f.path)) ?? mmprojs[0];
     const groups = new Map<string, RepoFile[]>();
     for (const f of ggufs) {
-      if (/mmproj/i.test(f.path)) continue;
+      if (/mmproj/i.test(f.path) || IMATRIX_RE.test(f.path)) continue;
       const label = (QUANT_RE.exec(f.path)?.[1] ?? path.basename(f.path, ".gguf")).toUpperCase();
       groups.set(label, [...(groups.get(label) ?? []), f]);
     }

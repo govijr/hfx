@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
           - target: darwin-arm64
-            runner: macos-14
+            runner: macos-latest # always Apple Silicon; pinned images (macos-14) get retired
           - target: darwin-x64
             runner: macos-15-intel
           - target: linux-x64

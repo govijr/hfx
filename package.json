@@ -1,0 +1,25 @@
+{
+  "name": "hfx",
+  "version": "0.1.0",
+  "description": "Search, pull and run Hugging Face models (text, vision, image, video) from your terminal",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "esbuild src/main.tsx --bundle --platform=node --format=cjs --target=node20 --jsx=automatic --external:electron --external:@zenbu-labs/pixel --external:react --outfile=dist/main.js",
+    "dev": "npm run build && node bin/hfx.js",
+    "typecheck": "tsc -p ."
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@zenbu-labs/pixel": "^0.3.2",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^18.3.31",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  },
+  "bin": {
+    "hfx": "bin/hfx.js"
+  }
+}

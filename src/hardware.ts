@@ -26,7 +26,7 @@ function run(cmd: string, args: string[]): string | null {
 export function detectHardware(): Hardware {
   const totalBytes = os.totalmem();
   if (process.platform === "darwin" && process.arch === "arm64") {
-    const chip = run("sysctl", ["-n", "machdep.cpu.brand_string"]) ?? "Apple Silicon";
+    const chip = run("/usr/sbin/sysctl", ["-n", "machdep.cpu.brand_string"]) ?? "Apple Silicon";
     // Metal lets the GPU wire roughly 2/3 (≤36 GB) to 3/4 (>36 GB) of unified memory.
     const share = totalBytes > 36 * GB ? 0.75 : 0.67;
     return { chip, totalBytes, budgetBytes: totalBytes * share, kind: "apple" };

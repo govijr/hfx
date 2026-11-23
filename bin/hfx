@@ -1,0 +1,65 @@
+#!/bin/sh
+# hfx launcher for release builds. Runs the app on the bundled Electron, so no system Node is needed.
+set -e
+
+# Resolve symlinks (~/.local/bin/hfx -> <install>/bin/hfx) to find the install root.
+self=$0
+while [ -L "$self" ]; do
+  link=$(readlink "$self")
+  case $link in
+    /*) self=$link ;;
+    *) self=$(dirname "$self")/$link ;;
+  esac
+done
+root=$(cd "$(dirname "$self")/.." && pwd)
+
+version=$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$root/package.json" | head -n 1)
+repo=${HFX_REPO:-govijr/hfx}
+
+case ${1-} in
+  -v | --version | version)
+    echo "hfx $version"
+    exit 0
+    ;;
+  update | upgrade)
+    exec sh -c "curl -fsSL https://raw.githubusercontent.com/$repo/main/install.sh | sh"
+    ;;
+  uninstall)
+    install_dir=$(dirname "$root")
+    printf 'Remove hfx from %s? Your models in ~/.hfx/models stay. [y/N] ' "$install_dir"
+    read -r answer
+    case $answer in
+      y | Y | yes)
+        rm -f "${HFX_BIN_DIR:-$HOME/.local/bin}/hfx"
+        rm -rf "$install_dir"
+        echo "hfx removed. Delete ~/.hfx yourself to remove downloaded models too."
+        ;;
+      *) echo "Cancelled." ;;
+    esac
+    exit 0
+    ;;
+  -h | --help | help)
+    cat <<EOF
+hfx $version: run Hugging Face models from your terminal
+
+usage:
+  hfx [search words]   open the app, optionally starting with a Hub search
+  hfx --version        print the version
+  hfx update           install the latest release
+  hfx uninstall        remove hfx (keeps downloaded models)
+EOF
+    exit 0
+    ;;
+esac
+
+pixel=$root/node_modules/@zenbu-labs/pixel
+case $(uname -s) in
+  Darwin) electron=$pixel/electron/dist/Electron.app/Contents/MacOS/pixel ;;
+  *) electron=$pixel/electron/dist/pixel ;;
+esac
+if [ ! -x "$electron" ]; then
+  echo "hfx: runtime missing at $electron. Reinstall with: hfx update" >&2
+  exit 1
+fi
+
+ELECTRON_RUN_AS_NODE=1 exec "$electron" "$pixel/dist/bin.js" "$root/dist/main.js" -- "$@"

@@ -2,11 +2,33 @@
 
 Search, pull and run Hugging Face models from your terminal: text, vision, image and video, in one Claude Code–style UI built on [PixelGUI](https://pixelgui.com).
 
+## Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/govijr/hfx/main/install.sh | sh
 ```
+
+macOS (Apple Silicon / Intel) and Linux (x64 / arm64). No Node needed: each release bundles its own runtime. Installs to `~/.hfx/app` and links `~/.local/bin/hfx`. Then: `hfx`, `hfx qwen3`, `hfx update`, `hfx uninstall`.
+
+Optional runtimes: `brew install uv` (MLX text, image, video, vision) and `brew install llama.cpp` (GGUF).
+
+## Develop
+
+```bash
 npm install
 npm run dev            # build + launch
 node bin/hfx.js qwen3  # launch straight into a search
+npx tsx scripts/e2e.ts mlx-community/Qwen3-0.6B-4bit   # headless pull → load → reply
 ```
+
+## Release
+
+```bash
+npm version patch      # bumps package.json and tags vX.Y.Z
+git push --follow-tags # CI builds 4 platform archives and publishes the GitHub release
+```
+
+`scripts/package.sh` builds the archive for the machine it runs on (`release/hfx-<os>-<arch>.tar.gz`); test it with `HFX_ARCHIVE=release/hfx-darwin-arm64.tar.gz sh install.sh`.
 
 Best in a terminal with kitty graphics (Ghostty, kitty, WezTerm, iTerm2) — images and video previews render inline. Other terminals fall back to a cell renderer (`PIXEL_RENDERER=cells`).
 
@@ -45,4 +67,8 @@ src/engines.ts      llama.cpp / MLX servers, Python worker
 src/ui/             transcript, picker, prompt, status line
 python/worker.py    diffusers/transformers JSON-lines worker
 scripts/e2e.ts      headless pull → load → chat check
+scripts/package.sh  per-platform release archive
+install.sh          curl installer
+bin/hfx             release launcher (runs on the bundled Electron)
+bin/hfx.js          dev launcher (runs on system Node)
 ```

@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Box, Image, Markdown, Text } from "@zenbu-labs/pixel";
@@ -6,6 +7,14 @@ import { fmtBytes } from "../hardware";
 import { listLocal, MODELS_DIR } from "../library";
 import { useAppState, type Item } from "../store";
 import { Line, ProgressBar, fmtDuration, pngSize, spinnerFrame, usePalette, useRem, useTick, type Palette } from "./kit";
+
+const VERSION = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8")).version as string;
+  } catch {
+    return "dev";
+  }
+})();
 
 const LOGO = [
   "..#####..",
@@ -36,7 +45,7 @@ function Banner() {
         ))}
       </Box>
       <Box style={{ flexDirection: "column", gap: rem * 0.15 }}>
-        <Line color={p.fg} segs={[{ t: "hfx", b: true }, { t: "  v0.1.0", c: p.muted }]} />
+        <Line color={p.fg} segs={[{ t: "hfx", b: true }, { t: `  v${VERSION}`, c: p.muted }]} />
         <Line
           color={p.muted}
           segs={[
